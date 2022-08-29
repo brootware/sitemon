@@ -151,25 +151,6 @@ def execute_sitemon_logic():
     parser = arg_helper()
     args = parser.parse_args()
 
-    if len(sys.argv) == 1:
-        # If there is no input argument and no piped input, print help menu and exit
-        if sys.stdin.isatty():
-            print(help_menu)
-            parser.print_help(sys.stderr)
-            sys.exit(1)
-
-        # This is reading in from linux piped stdin to redact. - echo 'google.com:443' | sitemon.py
-        stdin = parser.parse_args().text.read().splitlines()
-        print(f"[-] Single host feature not implemented yet.")
-        # core_redact.process_text(stdin)
-        sys.exit(1)
-
-    # This is detecting if it's a text or file input and redacting argument supplied like - sitemon 'google.com:443'
-    is_text = is_it_file(args.host[0])
-    if not is_text:
-        print(f"[-] Single host feature not implemented yet.")
-        # core_redact.process_text(args.text)
-
     # This is redacting all the files.
     files = recursive_file_search(args.host, args.extension, args.recursive)
 
@@ -178,16 +159,6 @@ def execute_sitemon_logic():
             site_monitor_loop(file,args.time,args.interval)
         except KeyboardInterrupt:
             print(f"[-] The monitor is stopped by the user. Goodbye!")
-
-        # if args.time and args.interval:
-        #     site_monitor_loop(file,args.time,args.interval)
-        # elif args.time:
-        #     site_monitor_loop(file,args.time,args.interval)
-        # elif args.interval:
-        #     site_monitor_loop(file,args.time,args.interval)
-        # else:
-        #     site_monitor_loop(file)
-
 
 def main():
     execute_sitemon_logic()
