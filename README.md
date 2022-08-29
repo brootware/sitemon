@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  A daemon tool to monitor the status of multiple sites without any external libraries.
+  A daemon tool to monitor the status of multiple sites without any external libraries like requests or ping.
 </p>
 
 <br><br>
@@ -22,9 +22,10 @@
 
 A monitoring daemon that reads in a list of hosts and ports to ping them and get response time in CSV format.
 
-- Uses socket-level pinging without any external libraries 🔌
+- Uses socket-level pinging 🔌
 - Asynchronously ping the list of hosts on the defined ports 🚀
 - Captures response time in milliseconds(ms) ⚡
+- Written in pure Python without any external libraries. 🐍
 
 ## Installation
 
