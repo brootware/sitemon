@@ -22,7 +22,7 @@ help_menu = """
         echo 'google.com:443' | sitemon
     """
 
-def generate_row_data(host_port_list: str) -> list:
+def generate_row_data(host_port_list: list) -> list:
     row_data = []
     for row in host_port_list:
         host=row[0]
@@ -53,15 +53,6 @@ def read_hosts_ports(csv_to_read: str) -> list:
         for row in csv_reader:
             host_port_list.append(row)
     return host_port_list
-
-# def process_from_list(host_port_list: list) -> list:
-#     row_list = []
-#     for row in host_port_list:
-#         host=row[0]
-#         port=row[1]
-#         row_list.append(generate_row_data(host,port))
-#     return row_list
-
 
 def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
     print("Press CTRL+C in the terminal if you want to stop monitoring.")
@@ -101,12 +92,12 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
 
 def arg_helper()-> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Supply a list of host and ports to monitor in csv format. E.g: google.com,443",
+        description="Supply a list of host and ports to monitor in csv format.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
         "host",
-        help="Supply a list of host and ports to monitor in csv format. E.g: google.com:443",
+        help="Supply a list of host and ports to monitor in csv format.",
         nargs="*",
         default=sys.stdin
     )

@@ -38,7 +38,7 @@ for row in host_port_list:
         row_list.append(generate_row_data(host,port))
 
 
-def generate_row_data(host_port_list: str) -> list:
+def generate_row_data(host_port_list: list) -> list:
     row_data = []
     for row in host_port_list:
         host=row[0]
