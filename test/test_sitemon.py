@@ -1,6 +1,5 @@
 from sitemon import __version__
-import os
-from sitemon import sitemon as SM
+import sitemon.sitemon as SM
 
 
 def test_version():
@@ -8,3 +7,4 @@ def test_version():
 
 def test_is_it_file():
     pass
+    # SM.is_it_file
