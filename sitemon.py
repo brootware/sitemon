@@ -58,7 +58,7 @@ def process_from_list(host_port_list: str = read_hosts_ports()) -> list:
     return row_list
 
 
-def site_monitor_loop() -> None:
+def site_monitor_loop(time_to_stop: str) -> None:
     print("Press CTRL+C in the terminal if you want to stop monitoring.")
     # read host data once
     host_data = read_hosts_ports()
@@ -70,10 +70,10 @@ def site_monitor_loop() -> None:
         writer.writerow(CSV_HEADER)
         while condition_to_run:
             current_time = time.strftime("%H:%M:%S",time.localtime())
-            # if current_time > time_to_stop:
-            #     iso_time = time.strftime("%H:%M:%S", time_to_stop)
-            #     print(f"[ + ] It's after {iso_time} now, stopping this script.")
-            #     condition_to_run = False
+            if current_time > time_to_stop:
+                iso_time = time.strftime("%H:%M:%S", time_to_stop)
+                print(f"[ + ] It's after {iso_time} now, stopping this script.")
+                condition_to_run = False
 
             row_list = process_from_list(host_data)
             for row in row_list:
@@ -86,9 +86,10 @@ def arg_helper()-> argparse.Namespace:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        "file",
+        "host",
         help="Supply a list of host and ports to monitor in csv format. E.g: google.com,443",
-        nargs="*"
+        nargs="*",
+        default=sys.stdin
     )
     parser.add_argument(
         "-s",
@@ -137,21 +138,31 @@ def recursive_file_search(full_path: str, extension: str, recursive: bool) -> se
             full_paths += glob.glob(path + '/*')
     return files
 
-# def execute_sitemon_logic():
-#     parser = arg_helper()
-#     args = parser.parse_args()
+def execute_sitemon_logic():
+    parser = arg_helper()
+    args = parser.parse_args()
 
-#     if len(sys.argv) == 1:
-#         # If there is no input argument and no piped input, print help menu and exit
-#         if sys.stdin.isatty():
-#             print(help_menu)
-#             parser.print_help(sys.stderr)
-#             sys.exit(1)
+    if len(sys.argv) == 1:
+        # If there is no input argument and no piped input, print help menu and exit
+        if sys.stdin.isatty():
+            print(help_menu)
+            parser.print_help(sys.stderr)
+            sys.exit(1)
 
-#         # This is reading in from linux piped stdin to redact. - echo 'google.com:443' | sitemon.py
-#         stdin = parser.parse_args().text.read().splitlines()
-#         core_redact.process_text(stdin)
-#         sys.exit(1)
+        # This is reading in from linux piped stdin to redact. - echo 'google.com:443' | sitemon.py
+        stdin = parser.parse_args().text.read().splitlines()
+        print(f"[-] Single IP feature not implemented yet.")
+        # core_redact.process_text(stdin)
+        sys.exit(1)
+
+    # This is detecting if it's a text or file input and redacting argument supplied like - prk 'This is my ip: 127.0.0.1.'
+    is_text = is_it_file(args.text[0])
+    if not is_text:
+        print(f"[-] Single IP feature not implemented yet.")
+        # core_redact.process_text(args.text)
+
+    # This is redacting all the files.
+    files = recursive_file_search(args.host, args.extension, args.recursive)
 
 def main():
     site_monitor_loop()
