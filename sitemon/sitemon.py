@@ -9,7 +9,7 @@ import sys
 import logging
 
 logging.basicConfig(level=logging.INFO)
-CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(Sec)','Response_Time(ms)']
+CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(HH:MM:SS)','Response_Time(ms)']
 
 banner = r"""
   _________.__  __              _____                 
