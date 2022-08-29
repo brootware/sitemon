@@ -61,3 +61,25 @@ To specify the time interval between each ping in seconds.
 ```bash
 sitemon file --interval 2
 ```
+
+## Optional help menu
+
+```bash
+usage: sitemon [-h] [-t TIME] [-i INTERVAL] [-r] [-e EXTENSION] [host ...]
+
+Supply a list of host and ports to monitor in csv format.
+
+positional arguments:
+  host                  Supply a list of host and ports to monitor in csv format. (default: <_io.TextIOWrapper
+                        name='<stdin>' mode='r' encoding='utf-8'>)
+
+options:
+  -h, --help            show this help message and exit
+  -t TIME, --time TIME  Time to stop monitoring. Please enter the time in HH:MM:SS format. Default="19:00:00"
+                        (default: None)
+  -i INTERVAL, --interval INTERVAL
+                        Option to put time interval in seconds. Usage: sitemon google.com:443 -i 1 (default: 1.5)
+  -r, --recursive       Search through subfolders (default: True)
+  -e EXTENSION, --extension EXTENSION
+                        File extension to filter by. (default: )
+```
