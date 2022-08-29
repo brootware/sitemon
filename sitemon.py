@@ -12,8 +12,22 @@ import logging
 logging.basicConfig(level=logging.INFO)
 CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(Sec)','Response_Time(ms)']
 
+banner = r"""
+  _________.__  __              _____                 
+ /   _____/|__|/  |_  ____     /     \   ____   ____  
+ \_____  \ |  \   __\/ __ \   /  \ /  \ /  _ \ /    \ 
+ /        \|  ||  | \  ___/  /    Y    (  <_> )   |  \
+/_______  /|__||__|  \___  > \____|__  /\____/|___|  /
+        \/               \/          \/            \/ 
+        +-+-+-+-+-+-+-+ +-+-+ +-+-+-+-+-+-+-+-+-+
+        |P|o|w|e|r|e|d| |b|y| |B|r|o|o|t|w|a|r|e|
+        +-+-+-+-+-+-+-+ +-+-+ +-+-+-+-+-+-+-+-+-+
+            
+    https://github.com/brootware
+    https://brootware.github.io   
+"""
 help_menu = """
-    SiteMon - A python script to monitor status of a site without any external libraries.
+    SiteMon - A python script to monitor status of list of sites without any external libraries.
     Example usage:\n
         sitemon file.csv
         sitemon file.csv --time 19:00:00
@@ -164,6 +178,7 @@ async def execute_sitemon_logic():
         
 
 def main():
+    print(banner)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     result = loop.run_until_complete(execute_sitemon_logic())
