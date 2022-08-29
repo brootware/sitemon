@@ -1,6 +1,6 @@
 import socket
 import time
-import concurrent.futures
+import asyncio
 import csv
 import argparse
 import os
@@ -21,7 +21,7 @@ help_menu = """
         sitemon file.csv --time 19:00:00 --interval 2
     """
 
-def generate_row_data(host_port_list: list) -> list:
+async def generate_row_data(host_port_list: list) -> list:
     row_data = []
     for row in host_port_list:
         host=row[0]
@@ -31,7 +31,7 @@ def generate_row_data(host_port_list: list) -> list:
             pinged_time = time.strftime("%H:%M:%S",time.localtime())
             start_time = time.perf_counter()
             try:
-                s.connect((host,port))
+                await s.connect((host,port))
                 logging.debug(f"Port {port} is open for {host}")
                 elapsed_time = (time.perf_counter()-start_time) * 1000
                 row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
@@ -53,7 +53,7 @@ def read_hosts_ports(csv_to_read: str) -> list:
             host_port_list.append(row)
     return host_port_list
 
-def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
+async def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
     print("Press CTRL+C in the terminal if you want to stop monitoring.")
     # read host data once
     host_port_data = read_hosts_ports(csv_to_read)
@@ -64,20 +64,21 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
         writer = csv.writer(file)
         writer.writerow(CSV_HEADER)
         while condition_to_run:
-            row_list = generate_row_data(host_port_data)
+            row_list = await generate_row_data(host_port_data)
             for row in row_list:
-                print(f"[+] Wrote pint result of {row[1],row[2]} to monitoring file.")
+                print(f"[+] Wrote ping result of {row[1],row[2]} to monitoring file.")
                 writer.writerow(row)
 
             current_time = time.localtime()
-            # Check if time_to_stop is not supplied by the user
+            # Check if time_to_stop is not supplied by the user and put default
             if time_to_stop is None:
                 time_to_stop = "19:00:00"
                 current_date = time.strftime("%Y %m %d")
                 time_to_stop = time.strptime(f"{current_date} {time_to_stop}", "%Y %m %d  %H:%M:%S")
+
             if current_time > time_to_stop:
                 iso_time = time.strftime("%H:%M:%S", time_to_stop)
-                print(f"[ + ] It's after {iso_time} now, stopping this script.")
+                print(f"[+] It's after {iso_time} now, stopping this script.")
                 condition_to_run = False
 
             # Interval in seconds
@@ -143,7 +144,7 @@ def recursive_file_search(full_path: str, extension: str, recursive: bool) -> se
             full_paths += glob.glob(path + '/*')
     return files
 
-def execute_sitemon_logic():
+async def execute_sitemon_logic():
     parser = arg_helper()
     args = parser.parse_args()
 
@@ -152,18 +153,23 @@ def execute_sitemon_logic():
 
     for file in files:
         try:
-            current_date = time.strftime("%Y %m %d")
-            args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
-        except ValueError:
-            sys.exit(f"[-] The time you entered is incorrect. Try again in HH:MM:SS format")
-
-        try:
-            site_monitor_loop(file,args.time,args.interval)
+            if args.time:
+                try:
+                    current_date = time.strftime("%Y %m %d")
+                    args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
+                    await site_monitor_loop(file,args.time,args.interval)
+                except ValueError:
+                    sys.exit(f"[-] The time you entered is incorrect. Try again in HH:MM:SS format")
+            else:
+                await site_monitor_loop(file,args.time,args.interval)
         except KeyboardInterrupt:
-            print(f"[-] The monitor is stopped by the user. Goodbye!")
+            print(f"[-] The monitoring process is stopped by the user. Goodbye!")
+        
 
 def main():
-    execute_sitemon_logic()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    result = loop.run_until_complete(execute_sitemon_logic())
 
 
 if __name__ == "__main__":
