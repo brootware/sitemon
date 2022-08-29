@@ -57,4 +57,6 @@ def generate_row_data(host_port_list: list) -> list:
                 row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
     return row_data
 
-generate_row_data(host_port_list)
+row_list = generate_row_data(host_port_list)
+for row in row_list:
+    print(row[1],row[2])

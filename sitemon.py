@@ -9,7 +9,7 @@ import glob
 import sys
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(Sec)','Response_Time(ms)']
 
 help_menu = """
@@ -67,7 +67,7 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
         while condition_to_run:
             row_list = generate_row_data(host_port_data)
             for row in row_list:
-                print(f"[+] Wrote {row} to {file}.")
+                print(f"[+] Wrote {row[1],row[2]} to monitoring file.")
                 writer.writerow(row)
 
             current_time = time.localtime()
