@@ -22,21 +22,23 @@ help_menu = """
         echo 'google.com:443' | sitemon
     """
 
-def generate_row_data(host: str, port: int) -> list:
+def generate_row_data(host_port_list: str) -> list:
     row_data = []
-    port = int(port)
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(1.5)
-        pinged_time = time.strftime("%H:%M:%S",time.localtime())
-        start_time = time.perf_counter()
-        try:
-            s.connect((host,port))
-            logging.debug(f"Port {port} is open for {host}")
-            elapsed_time = (time.perf_counter()-start_time) * 1000
-            row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
-        except Exception:
-            elapsed_time = (time.perf_counter()-start_time) * 1000
-            row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
+    for row in host_port_list:
+        host=row[0]
+        port=int(row[1])
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1.5)
+            pinged_time = time.strftime("%H:%M:%S",time.localtime())
+            start_time = time.perf_counter()
+            try:
+                s.connect((host,port))
+                logging.debug(f"Port {port} is open for {host}")
+                elapsed_time = (time.perf_counter()-start_time) * 1000
+                row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
+            except Exception:
+                elapsed_time = (time.perf_counter()-start_time) * 1000
+                row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
     return row_data
 
 
@@ -52,13 +54,13 @@ def read_hosts_ports(csv_to_read: str) -> list:
             host_port_list.append(row)
     return host_port_list
 
-def process_from_list(host_port_list: list) -> list:
-    row_list = []
-    for row in host_port_list:
-        host=row[0]
-        port=row[1]
-        row_list.append(generate_row_data(host,port))
-    return row_list
+# def process_from_list(host_port_list: list) -> list:
+#     row_list = []
+#     for row in host_port_list:
+#         host=row[0]
+#         port=row[1]
+#         row_list.append(generate_row_data(host,port))
+#     return row_list
 
 
 def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
@@ -72,7 +74,7 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
         writer = csv.writer(file)
         writer.writerow(CSV_HEADER)
         while condition_to_run:
-            row_list = process_from_list(host_port_data)
+            row_list = generate_row_data(host_port_data)
             for row in row_list:
                 print(f"[+] Wrote {row} to {file}.")
                 writer.writerow(row)
