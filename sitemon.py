@@ -15,11 +15,10 @@ CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(Sec)','Response_Time(m
 help_menu = """
     SiteMon - A python script to monitor status of a site without any external libraries.
     Example usage:\n
-        sitemon 'google.com:443'
-        sitemon [file/directory_with_files]
-        sitemon redacted_file --unredact .hashshadow.json
-        sitemon file --customfile custom.json
-        echo 'google.com:443' | sitemon
+        sitemon file.csv
+        sitemon file.csv --time 19:00:00
+        sitemon file --interval 2
+        sitemon file.csv --time 19:00:00 --interval 2
     """
 
 def generate_row_data(host_port_list: list) -> list:
@@ -67,7 +66,7 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
         while condition_to_run:
             row_list = generate_row_data(host_port_data)
             for row in row_list:
-                print(f"[+] Wrote {row[1],row[2]} to monitoring file.")
+                print(f"[+] Wrote pint result of {row[1],row[2]} to monitoring file.")
                 writer.writerow(row)
 
             current_time = time.localtime()
@@ -157,7 +156,7 @@ def execute_sitemon_logic():
             args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
         except ValueError:
             sys.exit(f"[-] The time you entered is incorrect. Try again in HH:MM:SS format")
-            
+
         try:
             site_monitor_loop(file,args.time,args.interval)
         except KeyboardInterrupt:
