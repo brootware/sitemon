@@ -1,6 +1,5 @@
 import socket
 import time
-import asyncio
 import csv
 import argparse
 import os
@@ -35,7 +34,7 @@ help_menu = """
         sitemon file.csv --time 19:00:00 --interval 2
     """
 
-async def generate_row_data(host_port_list: list) -> list:
+def generate_row_data(host_port_list: list) -> list:
     row_data = []
     for row in host_port_list:
         host=row[0]
@@ -45,13 +44,19 @@ async def generate_row_data(host_port_list: list) -> list:
             pinged_time = time.strftime("%H:%M:%S",time.localtime())
             start_time = time.perf_counter()
             try:
-                await s.connect((host,port))
-                logging.debug(f"Port {port} is open for {host}")
-                elapsed_time = (time.perf_counter()-start_time) * 1000
-                row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
-            except Exception:
-                elapsed_time = (time.perf_counter()-start_time) * 1000
-                row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
+                result = s.connect_ex((host,port))
+                s.setblocking(0)
+                if result == 0:
+                    logging.debug(f"Port {port} is open for {host}")
+                    elapsed_time = (time.perf_counter()-start_time) * 1000
+                    row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
+                else:
+                    elapsed_time = (time.perf_counter()-start_time) * 1000
+                    row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
+            except socket.gaierror:
+                sys.exit("[-] Hostname Could Not Be Resolved")
+            except socket.error:
+                sys.exit("[-] Server not responding")
     return row_data
 
 
@@ -67,7 +72,7 @@ def read_hosts_ports(csv_to_read: str) -> list:
             host_port_list.append(row)
     return host_port_list
 
-async def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
+def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
     print("Press CTRL+C in the terminal if you want to stop monitoring.")
     # read host data once
     host_port_data = read_hosts_ports(csv_to_read)
@@ -78,7 +83,7 @@ async def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: 
         writer = csv.writer(file)
         writer.writerow(CSV_HEADER)
         while condition_to_run:
-            row_list = await generate_row_data(host_port_data)
+            row_list = generate_row_data(host_port_data)
             for row in row_list:
                 print(f"[+] Wrote ping result of {row[1],row[2]} to monitoring file.")
                 writer.writerow(row)
@@ -160,7 +165,7 @@ def recursive_file_search(full_path: str, extension: str, recursive: bool) -> se
 def is_it_file(file_path: str) -> bool:
     return os.path.isfile(file_path) or os.path.isdir(file_path)
 
-async def execute_sitemon_logic():
+def execute_sitemon_logic():
     parser = arg_helper()
     args = parser.parse_args()
 
@@ -187,20 +192,21 @@ async def execute_sitemon_logic():
                 try:
                     current_date = time.strftime("%Y %m %d")
                     args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
-                    await site_monitor_loop(file,args.time,args.interval)
+                    site_monitor_loop(file,args.time,args.interval)
                 except ValueError:
                     sys.exit(f"[-] The time you entered is incorrect. Try again in HH:MM:SS format")
             else:
-                await site_monitor_loop(file,args.time,args.interval)
+                site_monitor_loop(file,args.time,args.interval)
         except KeyboardInterrupt:
             print(f"[-] The monitoring process is stopped by the user. Goodbye!")
         
 
 def main():
     print(banner)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(execute_sitemon_logic())
+    execute_sitemon_logic()
+    # loop = asyncio.new_event_loop()
+    # asyncio.set_event_loop(loop)
+    # result = loop.run_until_complete(execute_sitemon_logic())
 
 
 if __name__ == "__main__":
