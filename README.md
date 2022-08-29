@@ -13,14 +13,14 @@
 </p>
 
 <p align="center">
-  A daemon tool to monitor the status of multiple sites without any external libraries like requests or icmp (pings).
+  A daemon tool to monitor the status and response time of multiple sites without any external libraries like requests or ICMP (pings).
 </p>
 
 <br><br>
 
 ## Features
 
-A monitoring daemon that reads in a list of hosts and ports to ping them and get response time in CSV format.
+A monitoring daemon that reads in a list of hosts and ports to ping and records the response time in CSV format.
 
 - Uses socket-level pinging 🔌
 - Asynchronous, non-blocking pings on the list of defined hosts and ports 🚀
@@ -49,6 +49,7 @@ poetry install
 Make sure you got a csv file in this format for the agent to read in.
 
 ```csv
+<!-- file.csv -->
 host,port
 google.com,443
 google.com,8000
