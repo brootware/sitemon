@@ -159,6 +159,13 @@ async def execute_sitemon_logic():
     parser = arg_helper()
     args = parser.parse_args()
 
+    if len(sys.argv) == 1:
+        # If there is no input argument and no piped input, print help menu and exit
+        if sys.stdin.isatty():
+            print(help_menu)
+            parser.print_help(sys.stderr)
+            sys.exit(1)
+
     # This is redacting all the files.
     files = recursive_file_search(args.host, args.extension, args.recursive)
 
