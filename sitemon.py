@@ -90,6 +90,7 @@ async def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: 
                 current_date = time.strftime("%Y %m %d")
                 time_to_stop = time.strptime(f"{current_date} {time_to_stop}", "%Y %m %d  %H:%M:%S")
 
+            logging.debug(time_to_stop)
             if current_time > time_to_stop:
                 iso_time = time.strftime("%H:%M:%S", time_to_stop)
                 print(f"[+] It's after {iso_time} now, stopping this script.")
@@ -100,6 +101,7 @@ async def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: 
                 time.sleep(1.5)
             else:
                 time.sleep(float(time_interval))
+                logging.debug(time_interval)
 
 def arg_helper()-> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -155,6 +157,9 @@ def recursive_file_search(full_path: str, extension: str, recursive: bool) -> se
             full_paths += glob.glob(path + '/*')
     return files
 
+def is_it_file(file_path: str) -> bool:
+    return os.path.isfile(file_path) or os.path.isdir(file_path)
+
 async def execute_sitemon_logic():
     parser = arg_helper()
     args = parser.parse_args()
@@ -165,6 +170,13 @@ async def execute_sitemon_logic():
             print(help_menu)
             parser.print_help(sys.stderr)
             sys.exit(1)
+
+    # This is detecting if it's a text or file input and redacting argument supplied like - prk 'This is my ip: 127.0.0.1.'
+    is_text = is_it_file(args.host[0])
+    if not is_text:
+        print(help_menu)
+        sys.exit(1)
+        # core_redact.process_text(args.host)
 
     # This is redacting all the files.
     files = recursive_file_search(args.host, args.extension, args.recursive)
