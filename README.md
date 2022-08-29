@@ -46,6 +46,17 @@ poetry install
 
 ## Usage
 
+Make sure you got a csv file in this format for the agent to read in.
+
+```csv
+host,port
+google.com,443
+google.com,8000
+apple.com,8080
+apple.com,443
+apple.com,9000
+```
+
 To monitor a list of hosts and ports from a CSV file.
 
 ```bash

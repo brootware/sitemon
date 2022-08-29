@@ -1,3 +1,6 @@
 host,port
 google.com,443
 google.com,8000
+apple.com,8080
+apple.com,443
+apple.com,9000
