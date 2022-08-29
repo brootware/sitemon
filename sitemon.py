@@ -129,9 +129,6 @@ def arg_helper()-> argparse.Namespace:
     )
     return parser
 
-def is_it_file(file_path: str) -> bool:
-    return os.path.isfile(file_path) or os.path.isdir(file_path)
-
 def recursive_file_search(full_path: str, extension: str, recursive: bool) -> set:
     full_paths = [os.path.join(os.getcwd(), path) for path in full_path]
     files = set()
