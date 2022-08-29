@@ -87,9 +87,6 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
             else:
                 time.sleep(float(time_interval))
 
-            
-
-
 def arg_helper()-> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Supply a list of host and ports to monitor in csv format.",
@@ -155,6 +152,12 @@ def execute_sitemon_logic():
     files = recursive_file_search(args.host, args.extension, args.recursive)
 
     for file in files:
+        try:
+            current_date = time.strftime("%Y %m %d")
+            args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
+        except ValueError:
+            sys.exit(f"[-] The time you entered is incorrect. Try again in HH:MM:SS format")
+            
         try:
             site_monitor_loop(file,args.time,args.interval)
         except KeyboardInterrupt:
