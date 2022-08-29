@@ -40,6 +40,7 @@ Install dependencies from [`pyproject.toml`](./pyproject.toml)
 
 ```bash
 pip install pyproject.toml
+poetry install
 ```
 
 ## Usage
