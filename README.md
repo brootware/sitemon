@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  A daemon tool to monitor the status and response time of multiple sites without any external libraries like requests or ICMP (pings).
+  An agent to monitor the uptime of multiple sites and response time without any external libraries like requests or ICMP (pings).
 </p>
 
 <br><br>
