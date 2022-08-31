@@ -7,9 +7,11 @@ import uuid
 import glob
 import sys
 import logging
+import concurrent.futures
+
 
 logging.basicConfig(level=logging.INFO)
-CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(HH:MM:SS)','Response_Time(ms)']
+CSV_HEADER = ['ID','FQDN(IP)','PORT','Is_Up','Pinged_Time(Sec)','Response_Time(ms)']
 
 banner = r"""
   _________.__  __              _____                 
@@ -34,29 +36,30 @@ help_menu = """
         sitemon file.csv --time 19:00:00 --interval 2
     """
 
-def generate_row_data(host_port_list: list) -> list:
+def check_socket(host_port_list: list) -> list:
     row_data = []
-    for row in host_port_list:
-        host=row[0]
-        port=int(row[1])
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(1.5)
-            pinged_time = time.strftime("%H:%M:%S",time.localtime())
-            start_time = time.perf_counter()
-            try:
-                result = s.connect_ex((host,port))
-                s.setblocking(0)
-                if result == 0:
-                    logging.debug(f"Port {port} is open for {host}")
-                    elapsed_time = (time.perf_counter()-start_time) * 1000
-                    row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
-                else:
-                    elapsed_time = (time.perf_counter()-start_time) * 1000
-                    row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
-            except socket.gaierror:
-                sys.exit("[-] Hostname Could Not Be Resolved")
-            except socket.error:
-                sys.exit("[-] Server not responding")
+    host = host_port_list[0]
+    port = int(host_port_list[1])
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.8)
+        pinged_time = time.strftime("%H:%M:%S",time.localtime())
+        start_time = time.perf_counter()
+        try:
+            result = s.connect_ex((host,port))
+            s.setblocking(0)
+            if result == 0:
+                logging.debug(f"Port {port} is open for {host}")
+                # print(f"Port {port} is open for {host}")
+                elapsed_time = (time.perf_counter()-start_time) * 1000
+                row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
+            else:
+                logging.debug(f"Port {port} is closed for {host}")
+                elapsed_time = (time.perf_counter()-start_time) * 1000
+                row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
+        except socket.gaierror:
+            sys.exit("[-] Hostname Could Not Be Resolved")
+        except socket.error:
+            sys.exit("[-] Server not responding")
     return row_data
 
 
@@ -83,10 +86,16 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
         writer = csv.writer(file)
         writer.writerow(CSV_HEADER)
         while condition_to_run:
-            row_list = generate_row_data(host_port_data)
-            for row in row_list:
-                print(f"[+] Wrote ping result of {row[1],row[2]} to monitoring file.")
-                writer.writerow(row)
+            future_to_host = []
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                for data in host_port_data:
+                    future_to_host.append(executor.submit(check_socket,data))
+
+            for future in concurrent.futures.as_completed(future_to_host):
+                row_list = future.result()
+                for row in row_list:
+                    print(f"[+] Wrote ping result of {row[1],row[2]} to {generated_file}.")
+                    writer.writerow(row)
 
             current_time = time.localtime()
             # Check if time_to_stop is not supplied by the user and put default
