@@ -36,6 +36,7 @@ help_menu = """
         sitemon file.csv --time 19:00:00 --interval 2
     """
 
+
 def check_socket(host_port_list: list) -> list:
     row_data = []
     host = host_port_list[0]
@@ -74,6 +75,7 @@ def read_hosts_ports(csv_to_read: str) -> list:
         for row in csv_reader:
             host_port_list.append(row)
     return host_port_list
+
 
 def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -> None:
     print("Press CTRL+C in the terminal if you want to stop monitoring.")
@@ -117,7 +119,8 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
                 time.sleep(float(time_interval))
                 logging.debug(time_interval)
 
-def arg_helper()-> argparse.Namespace:
+
+def arg_helper() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Supply a list of host and ports to monitor in csv format.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -171,8 +174,10 @@ def recursive_file_search(full_path: str, extension: str, recursive: bool) -> se
             full_paths += glob.glob(path + '/*')
     return files
 
+
 def is_it_file(file_path: str) -> bool:
     return os.path.isfile(file_path) or os.path.isdir(file_path)
+
 
 def execute_sitemon_logic():
     parser = arg_helper()
@@ -190,7 +195,6 @@ def execute_sitemon_logic():
     if not is_text:
         print(help_menu)
         sys.exit(1)
-        # core_redact.process_text(args.host)
 
     # This is redacting all the files.
     files = recursive_file_search(args.host, args.extension, args.recursive)
@@ -203,19 +207,16 @@ def execute_sitemon_logic():
                     args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
                     site_monitor_loop(file,args.time,args.interval)
                 except ValueError:
-                    sys.exit(f"[-] The time you entered is incorrect. Try again in HH:MM:SS format")
+                    sys.exit(f"[-] The time {args.time} you entered is incorrect. Try again in HH:MM:SS format")
             else:
                 site_monitor_loop(file,args.time,args.interval)
         except KeyboardInterrupt:
-            print(f"[-] The monitoring process is stopped by the user. Goodbye!")
+            print("[-] The monitoring process is stopped by the user. Goodbye!")
         
 
 def main():
     print(banner)
     execute_sitemon_logic()
-    # loop = asyncio.new_event_loop()
-    # asyncio.set_event_loop(loop)
-    # result = loop.run_until_complete(execute_sitemon_logic())
 
 
 if __name__ == "__main__":
