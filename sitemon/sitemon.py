@@ -43,20 +43,20 @@ def check_socket(host_port_list: list) -> list:
     port = int(host_port_list[1])
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(0.8)
-        pinged_time = time.strftime("%H:%M:%S",time.localtime())
+        pinged_time = time.strftime("%H:%M:%S", time.localtime())
         start_time = time.perf_counter()
         try:
-            result = s.connect_ex((host,port))
+            result = s.connect_ex((host, port))
             s.setblocking(0)
             if result == 0:
                 logging.debug(f"Port {port} is open for {host}")
                 # print(f"Port {port} is open for {host}")
                 elapsed_time = (time.perf_counter()-start_time) * 1000
-                row_data.append([str(uuid.uuid4()),host,port,True,pinged_time,elapsed_time])
+                row_data.append([str(uuid.uuid4()), host, port, True, pinged_time, elapsed_time])
             else:
                 logging.debug(f"Port {port} is closed for {host}")
                 elapsed_time = (time.perf_counter()-start_time) * 1000
-                row_data.append([str(uuid.uuid4()),host,port,False,pinged_time,elapsed_time])
+                row_data.append([str(uuid.uuid4()), host, port, False, pinged_time, elapsed_time])
         except socket.gaierror:
             sys.exit("[-] Hostname Could Not Be Resolved")
         except socket.error:
@@ -91,7 +91,7 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
             future_to_host = []
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 for data in host_port_data:
-                    future_to_host.append(executor.submit(check_socket,data))
+                    future_to_host.append(executor.submit(check_socket, data))
 
             for future in concurrent.futures.as_completed(future_to_host):
                 row_list = future.result()
@@ -142,7 +142,7 @@ def arg_helper() -> argparse.Namespace:
         "-i",
         "--interval",
         help="""
-            Option to put time interval in seconds. 
+            Option to put time interval in seconds.
             Usage: sitemon google.com:443 -i 1
             """,
         default=1.5
@@ -161,6 +161,7 @@ def arg_helper() -> argparse.Namespace:
         help='File extension to filter by.'
     )
     return parser
+
 
 def recursive_file_search(full_path: str, extension: str, recursive: bool) -> set:
     full_paths = [os.path.join(os.getcwd(), path) for path in full_path]
@@ -205,13 +206,13 @@ def execute_sitemon_logic():
                 try:
                     current_date = time.strftime("%Y %m %d")
                     args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
-                    site_monitor_loop(file,args.time,args.interval)
+                    site_monitor_loop(file, args.time, args.interval)
                 except ValueError:
                     sys.exit(f"[-] The time {args.time} you entered is incorrect. Try again in HH:MM:SS format")
             else:
-                site_monitor_loop(file,args.time,args.interval)
+                site_monitor_loop(file, args.time, args.interval)
         except KeyboardInterrupt:
-            print("[-] The monitoring process is stopped by the user. Goodbye!")
+            print("[!] The monitoring process is stopped by the user. Goodbye!")
         
 
 def main():
