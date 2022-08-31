@@ -28,7 +28,7 @@ banner = r"""
     https://brootware.github.io   
 """
 help_menu = """
-    SiteMon - A python script to monitor status of list of sites without any external libraries.
+    SiteMon - A python tool to monitor status of list of sites without any external libraries.
     Example usage:\n
         sitemon file.csv
         sitemon file.csv --time 19:00:00
