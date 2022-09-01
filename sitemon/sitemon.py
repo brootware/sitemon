@@ -138,7 +138,7 @@ def arg_helper() -> argparse.Namespace:
         "--interval",
         help="""
             Option to put time interval in seconds.
-            Usage: sitemon google.com:443 -i 1
+            Usage: sitemon host.csv -i 1
             """,
         default=1.5
     )
