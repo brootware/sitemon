@@ -100,11 +100,6 @@ def site_monitor_loop(csv_to_read: str, time_to_stop: str, time_interval: int) -
                     writer.writerow(row)
 
             current_time = time.localtime()
-            # Check if time_to_stop is not supplied by the user and put default
-            if time_to_stop is None:
-                time_to_stop = "19:00:00"
-                current_date = time.strftime("%Y %m %d")
-                time_to_stop = time.strptime(f"{current_date} {time_to_stop}", "%Y %m %d  %H:%M:%S")
 
             logging.debug(time_to_stop)
             if current_time > time_to_stop:
@@ -191,26 +186,27 @@ def execute_sitemon_logic():
             parser.print_help(sys.stderr)
             sys.exit(1)
 
-    # This is detecting if it's a text or file input and redacting argument supplied like - prk 'This is my ip: 127.0.0.1.'
+    # This is detecting if it's a text or file input supplied like - sm 'This is my ip: 127.0.0.1.'
     is_text = is_it_file(args.host[0])
     if not is_text:
         print(help_menu)
         sys.exit(1)
 
-    # This is redacting all the files.
+    # This getting all the files in directories.
     files = recursive_file_search(args.host, args.extension, args.recursive)
-
+    current_date = time.strftime("%Y %m %d")
     for file in files:
         try:
             if args.time:
                 try:
-                    current_date = time.strftime("%Y %m %d")
                     args.time = time.strptime(f"{current_date} {args.time}", "%Y %m %d  %H:%M:%S")
                     site_monitor_loop(file, args.time, args.interval)
                 except ValueError:
                     sys.exit(f"[-] The time {args.time} you entered is incorrect. Try again in HH:MM:SS format")
             else:
-                site_monitor_loop(file, args.time, args.interval)
+                time_to_stop = "19:00:00"
+                time_to_stop = time.strptime(f"{current_date} {time_to_stop}", "%Y %m %d  %H:%M:%S")
+                site_monitor_loop(file, time_to_stop, args.interval)
         except KeyboardInterrupt:
             print("[!] The monitoring process is stopped by the user. Goodbye!")
         
